@@ -4,7 +4,7 @@
 // See also https://github.com/stapelberg/rsyncprom for a wrapper program which
 // pushes the extracted transfer details to a Prometheus push gateway.
 //
-// Rsync Requirements
+// # Rsync Requirements
 //
 // Start rsync with --verbose (-v) or --stats to enable printing transfer
 // totals.
@@ -18,6 +18,7 @@ package rsyncparse
 
 import (
 	"bufio"
+	"fmt"
 	"io"
 	"regexp"
 	"strconv"
@@ -58,6 +59,10 @@ func Parse(r io.Reader) (*Stats, error) {
 			// sent 1,590 bytes  received 18 bytes  3,216.00 bytes/sec
 			// total size is 1,188,046  speedup is 738.83
 			matches := statsTransferRe.FindStringSubmatch(line)
+			if len(matches) == 0 {
+				return nil, fmt.Errorf("could not parse rsync 'sent' line; try starting rsync with LC_ALL=C.UTF-8")
+			}
+
 			p.Found = true
 			// parse rsync do_big_num(int64 num) output
 			// parse 1[,.]192[,.]097 bytes
